@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -55,9 +56,17 @@ class _RandomCatsState extends State<RandomCats> {
     }
   }
 
-  void saveFile(String filename, List<int> fileData) async {
-    File file = File("/storage/emulated/0/Pictures/$filename");
-    file.writeAsBytes(fileData);
+  Future saveFile(String filename, List<int> fileData) async {
+    var permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isUndetermined || permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
+      Permission.storage.request();
+    }
+
+    permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isGranted) {
+      File file = File("/storage/emulated/0/Pictures/$filename");
+      file.writeAsBytes(fileData);
+    }
   }
 
   Widget _buildPhotos() {
@@ -90,8 +99,8 @@ class _RandomCatsState extends State<RandomCats> {
           return CircularProgressIndicator();
         },
       ),
-      onLongPress: () {
-        saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
+      onLongPress: () async {
+        await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Image saved.")
         ));
