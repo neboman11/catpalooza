@@ -38,6 +38,126 @@ class Photo {
   }
 }
 
+class CatPhotoRow extends StatefulWidget {
+  final Future<Photo> photo;
+  CatPhotoRow({this.photo});
+
+  @override
+  _CatPhotoRowState createState() => _CatPhotoRowState(photo: photo);
+}
+
+class _CatPhotoRowState extends State<CatPhotoRow> {
+  final Future<Photo> photo;
+
+  OverlayEntry _overlayEntry;
+  bool _focused = false;
+
+  _CatPhotoRowState({this.photo});
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject();
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+        builder: (context) => Positioned(
+          left: offset.dx,
+          top: offset.dy + size.height + 5.0,
+          width: size.width,
+          child: Material(
+            elevation: 4.0,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              children: <Widget>[
+                ListTile(
+                  title: Text('angry'),
+                ),
+                ListTile(
+                  title: Text('bad-data'),
+                ),
+                ListTile(
+                  title: Text('garbage'),
+                ),
+                ListTile(
+                  title: Text('happy'),
+                ),
+                ListTile(
+                  title: Text('none'),
+                ),
+                ListTile(
+                  title: Text('romantic/love'),
+                ),
+                ListTile(
+                  title: Text('sad'),
+                ),
+                ListTile(
+                  title: Text('spooked'),
+                ),
+                ListTile(
+                  title: Text('violent'),
+                ),
+              ],
+            ),
+          )
+        )
+     );
+  }
+
+  Future<bool> saveFile(String filename, List<int> fileData) async {
+    var permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isUndetermined || permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
+      Permission.storage.request();
+    }
+
+    permissionStatus = await Permission.storage.status;
+    if (permissionStatus.isGranted) {
+      File file = File("/storage/emulated/0/Pictures/$filename");
+      file.writeAsBytes(fileData);
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Photo photoTmp;
+    return ListTile(
+      title: FutureBuilder<Photo>(
+        future: photo,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            photoTmp = snapshot.data;
+            return Image.memory(base64Decode(snapshot.data.imageData));
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+          return CircularProgressIndicator();
+        },
+      ),
+      onLongPress: () async {
+        var saved = await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
+        if (saved) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Image saved.")
+          ));
+        }
+      },
+      onTap: () {
+        if (_focused) {
+          this._overlayEntry.remove();
+          _focused = false;
+        } else {
+          this._overlayEntry = this._createOverlayEntry();
+          Overlay.of(context).insert(this._overlayEntry);
+          _focused = true;
+        }
+      },
+    );
+  }
+}
+
+
 class RandomCats extends StatefulWidget {
   @override
   _RandomCatsState createState() => _RandomCatsState();
@@ -53,19 +173,6 @@ class _RandomCatsState extends State<RandomCats> {
       return Photo.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to download image\n' + response.body);
-    }
-  }
-
-  Future saveFile(String filename, List<int> fileData) async {
-    var permissionStatus = await Permission.storage.status;
-    if (permissionStatus.isUndetermined || permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
-      Permission.storage.request();
-    }
-
-    permissionStatus = await Permission.storage.status;
-    if (permissionStatus.isGranted) {
-      File file = File("/storage/emulated/0/Pictures/$filename");
-      file.writeAsBytes(fileData);
     }
   }
 
@@ -85,26 +192,8 @@ class _RandomCatsState extends State<RandomCats> {
   }
 
   Widget _buildRow(Future<Photo> photo) {
-    Photo photoTmp;
-    return ListTile(
-      title: FutureBuilder<Photo>(
-        future: photo,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            photoTmp = snapshot.data;
-            return Image.memory(base64Decode(snapshot.data.imageData));
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          return CircularProgressIndicator();
-        },
-      ),
-      onLongPress: () async {
-        await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Image saved.")
-        ));
-      },
+    return CatPhotoRow(
+      photo: photo,
     );
   }
 
