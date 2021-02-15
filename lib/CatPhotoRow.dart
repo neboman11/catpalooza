@@ -17,8 +17,6 @@ class CatPhotoRow extends StatefulWidget {
 }
 
 class _CatPhotoRowState extends State<CatPhotoRow> {
-  static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
-
   final Future<Photo> futurePhoto;
   Photo _photo;
 
@@ -43,23 +41,8 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
               offset: Offset(0.0, size.height + 5.0),
               child: Material(
                 elevation: 4.0,
-                child: Container(
-                  height: 180.0,
-                  // child: Scrollbar(
-                  //   isAlwaysShown: true,
-                  //   controller: this._scrollController,
-                  child: ListView.builder(
-                    itemCount: ScorerRowNames.length,
-                    padding: EdgeInsets.zero,
-                    itemBuilder: (context, i) {
-                      return ScorerRowItem(
-                        scoreText: ScorerRowNames.elementAt(i),
-                        photoID: _photo.id,
-                        scoreValue: i,
-                      );
-                    },
-                  )
-                  // ),
+                child: ScorerList(
+                  photo: _photo
                 ),
               ),
             )
@@ -122,18 +105,54 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
   }
 }
 
-class ScorerRowItem extends StatelessWidget {
-  final String scoreText;
-  final int photoID;
-  final int scoreValue;
+class ScorerList extends StatefulWidget {
+  final Photo photo;
 
-  ScorerRowItem({this.scoreText, this.photoID, this.scoreValue});
+  ScorerList({this.photo});
+
+  @override
+  _ScorerListState createState() => _ScorerListState(
+    photo: this.photo,
+    selectedScore: this.photo.score,
+  );
+}
+
+class _ScorerListState extends State<ScorerList> {
+  static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
+
+  final Photo photo;
+
+  int selectedScore;
+
+  _ScorerListState({this.photo, this.selectedScore});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text('$scoreText'),
+    return Container(
+        height: 180.0,
+        // child: Scrollbar(
+        //   isAlwaysShown: true,
+        //   controller: this._scrollController,
+        child: ListView.builder(
+          itemCount: ScorerRowNames.length,
+          padding: EdgeInsets.zero,
+          itemBuilder: (context, i) {
+            String currentScoreText = ScorerRowNames.elementAt(i);
+            return ListTile(
+              title: Text("$currentScoreText"),
+              onTap: () {
+                setState(() {
+                  selectedScore = i;
+                });
+              },
+              trailing: Icon(
+                (selectedScore == i) ? Icons.check : Icons.check_outlined,
+                color: (selectedScore == i) ? Colors.blue : Colors.black12,
+              ),
+            );
+          },
+        )
+      // ),
     );
   }
 }
-
