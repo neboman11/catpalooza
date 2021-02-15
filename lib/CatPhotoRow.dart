@@ -13,11 +13,14 @@ class CatPhotoRow extends StatefulWidget {
   CatPhotoRow({this.photo});
 
   @override
-  _CatPhotoRowState createState() => _CatPhotoRowState(photo: photo);
+  _CatPhotoRowState createState() => _CatPhotoRowState(futurePhoto: photo);
 }
 
 class _CatPhotoRowState extends State<CatPhotoRow> {
-  final Future<Photo> photo;
+  static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
+
+  final Future<Photo> futurePhoto;
+  Photo _photo;
 
   OverlayEntry _overlayEntry;
   bool _focused = false;
@@ -25,7 +28,7 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
   final LayerLink _layerLink = LayerLink();
   // final ScrollController _scrollController = ScrollController();
 
-  _CatPhotoRowState({this.photo});
+  _CatPhotoRowState({this.futurePhoto});
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject();
@@ -45,39 +48,17 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
                   // child: Scrollbar(
                   //   isAlwaysShown: true,
                   //   controller: this._scrollController,
-                  child: ListView(
+                  child: ListView.builder(
+                    itemCount: ScorerRowNames.length,
                     padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    children: <Widget>[
-                      ListTile(
-                        title: Text('angry'),
-                      ),
-                      ListTile(
-                        title: Text('bad-data'),
-                      ),
-                      ListTile(
-                        title: Text('garbage'),
-                      ),
-                      ListTile(
-                        title: Text('happy'),
-                      ),
-                      ListTile(
-                        title: Text('none'),
-                      ),
-                      ListTile(
-                        title: Text('romantic/love'),
-                      ),
-                      ListTile(
-                        title: Text('sad'),
-                      ),
-                      ListTile(
-                        title: Text('spooked'),
-                      ),
-                      ListTile(
-                        title: Text('violent'),
-                      ),
-                    ],
-                  ),
+                    itemBuilder: (context, i) {
+                      return ScorerRowItem(
+                        scoreText: ScorerRowNames.elementAt(i),
+                        photoID: _photo.id,
+                        scoreValue: i,
+                      );
+                    },
+                  )
                   // ),
                 ),
               ),
@@ -103,15 +84,14 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
 
   @override
   Widget build(BuildContext context) {
-    Photo photoTmp;
     return CompositedTransformTarget(
       link: this._layerLink,
       child: ListTile(
         title: FutureBuilder<Photo>(
-          future: photo,
+          future: futurePhoto,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              photoTmp = snapshot.data;
+              _photo = snapshot.data;
               return Image.memory(base64Decode(snapshot.data.imageData));
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
@@ -120,7 +100,7 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
           },
         ),
         onLongPress: () async {
-          var saved = await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
+          var saved = await saveFile(_photo.name, base64Decode(_photo.imageData));
           if (saved) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text("Image saved.")
@@ -141,3 +121,19 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
     );
   }
 }
+
+class ScorerRowItem extends StatelessWidget {
+  final String scoreText;
+  final int photoID;
+  final int scoreValue;
+
+  ScorerRowItem({this.scoreText, this.photoID, this.scoreValue});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text('$scoreText'),
+    );
+  }
+}
+
