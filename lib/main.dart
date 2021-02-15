@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
@@ -53,6 +54,7 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
   bool _focused = false;
 
   final LayerLink _layerLink = LayerLink();
+  // final ScrollController _scrollController = ScrollController();
 
   _CatPhotoRowState({this.photo});
 
@@ -69,38 +71,45 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
           offset: Offset(0.0, size.height + 5.0),
           child: Material(
             elevation: 4.0,
-            child: ListView(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              children: <Widget>[
-                ListTile(
-                  title: Text('angry'),
+            child: Container(
+              height: 180.0,
+              // child: Scrollbar(
+              //   isAlwaysShown: true,
+              //   controller: this._scrollController,
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  children: <Widget>[
+                    ListTile(
+                      title: Text('angry'),
+                    ),
+                    ListTile(
+                      title: Text('bad-data'),
+                    ),
+                    ListTile(
+                      title: Text('garbage'),
+                    ),
+                    ListTile(
+                      title: Text('happy'),
+                    ),
+                    ListTile(
+                      title: Text('none'),
+                    ),
+                    ListTile(
+                      title: Text('romantic/love'),
+                    ),
+                    ListTile(
+                      title: Text('sad'),
+                    ),
+                    ListTile(
+                      title: Text('spooked'),
+                    ),
+                    ListTile(
+                      title: Text('violent'),
+                    ),
+                  ],
                 ),
-                ListTile(
-                  title: Text('bad-data'),
-                ),
-                ListTile(
-                  title: Text('garbage'),
-                ),
-                ListTile(
-                  title: Text('happy'),
-                ),
-                ListTile(
-                  title: Text('none'),
-                ),
-                ListTile(
-                  title: Text('romantic/love'),
-                ),
-                ListTile(
-                  title: Text('sad'),
-                ),
-                ListTile(
-                  title: Text('spooked'),
-                ),
-                ListTile(
-                  title: Text('violent'),
-                ),
-              ],
+              // ),
             ),
           ),
         )
