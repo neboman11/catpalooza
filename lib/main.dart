@@ -52,18 +52,21 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
   OverlayEntry _overlayEntry;
   bool _focused = false;
 
+  final LayerLink _layerLink = LayerLink();
+
   _CatPhotoRowState({this.photo});
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject();
     var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
 
     return OverlayEntry(
-        builder: (context) => Positioned(
-          left: offset.dx,
-          top: offset.dy + size.height + 5.0,
-          width: size.width,
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: this._layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0.0, size.height + 5.0),
           child: Material(
             elevation: 4.0,
             child: ListView(
@@ -99,9 +102,10 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
                 ),
               ],
             ),
-          )
+          ),
         )
-     );
+      )
+    );
   }
 
   Future<bool> saveFile(String filename, List<int> fileData) async {
@@ -122,37 +126,40 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
   @override
   Widget build(BuildContext context) {
     Photo photoTmp;
-    return ListTile(
-      title: FutureBuilder<Photo>(
-        future: photo,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            photoTmp = snapshot.data;
-            return Image.memory(base64Decode(snapshot.data.imageData));
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
+    return CompositedTransformTarget(
+      link: this._layerLink,
+      child: ListTile(
+        title: FutureBuilder<Photo>(
+          future: photo,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              photoTmp = snapshot.data;
+              return Image.memory(base64Decode(snapshot.data.imageData));
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            return CircularProgressIndicator();
+          },
+        ),
+        onLongPress: () async {
+          var saved = await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
+          if (saved) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text("Image saved.")
+            ));
           }
-          return CircularProgressIndicator();
+        },
+        onTap: () {
+          if (_focused) {
+            this._overlayEntry.remove();
+            _focused = false;
+          } else {
+            this._overlayEntry = this._createOverlayEntry();
+            Overlay.of(context).insert(this._overlayEntry);
+            _focused = true;
+          }
         },
       ),
-      onLongPress: () async {
-        var saved = await saveFile(photoTmp.name, base64Decode(photoTmp.imageData));
-        if (saved) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Image saved.")
-          ));
-        }
-      },
-      onTap: () {
-        if (_focused) {
-          this._overlayEntry.remove();
-          _focused = false;
-        } else {
-          this._overlayEntry = this._createOverlayEntry();
-          Overlay.of(context).insert(this._overlayEntry);
-          _focused = true;
-        }
-      },
     );
   }
 }
