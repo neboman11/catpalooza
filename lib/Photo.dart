@@ -3,7 +3,7 @@ class Photo {
   final String name;
   final String imageData;
   final int size;
-  final int score;
+  int score;
 
   Photo({this.id, this.name, this.imageData, this.size, this.score});
 

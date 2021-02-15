@@ -120,7 +120,7 @@ class ScorerList extends StatefulWidget {
 class _ScorerListState extends State<ScorerList> {
   static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
 
-  final Photo photo;
+  Photo photo;
 
   int selectedScore;
 
@@ -143,10 +143,11 @@ class _ScorerListState extends State<ScorerList> {
               onTap: () {
                 setState(() {
                   selectedScore = i;
+                  photo.score = i;
                 });
               },
               trailing: Icon(
-                (selectedScore == i) ? Icons.check : Icons.check_outlined,
+                Icons.check,
                 color: (selectedScore == i) ? Colors.blue : Colors.black12,
               ),
             );
