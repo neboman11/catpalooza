@@ -113,6 +113,7 @@ class ScorerList extends StatefulWidget {
   @override
   _ScorerListState createState() => _ScorerListState(
     photo: this.photo,
+    photoID: this.photo.id,
     selectedScore: this.photo.score,
   );
 }
@@ -120,11 +121,12 @@ class ScorerList extends StatefulWidget {
 class _ScorerListState extends State<ScorerList> {
   static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
 
-  Photo photo;
+  final int photoID;
 
+  Photo photo;
   int selectedScore;
 
-  _ScorerListState({this.photo, this.selectedScore});
+  _ScorerListState({this.photo, this.photoID, this.selectedScore});
 
   @override
   Widget build(BuildContext context) {
@@ -137,14 +139,19 @@ class _ScorerListState extends State<ScorerList> {
           itemCount: ScorerRowNames.length,
           padding: EdgeInsets.zero,
           itemBuilder: (context, i) {
-            String currentScoreText = ScorerRowNames.elementAt(i);
             return ListTile(
-              title: Text("$currentScoreText"),
-              onTap: () {
+              title: Text(ScorerRowNames.elementAt(i)),
+              onTap: () async {
                 setState(() {
                   selectedScore = i;
                   photo.score = i;
                 });
+
+                final response = await http.get('https://www.nesbitt.rocks/catpalooza/score?id=$photoID&score=$selectedScore');
+
+                if (response.statusCode != 200) {
+                  throw Exception("Failed to score image\n" + response.body);
+                }
               },
               trailing: Icon(
                 Icons.check,
