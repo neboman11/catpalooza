@@ -1,16 +1,11 @@
 # catpalooza
 
-Cat facts and pictures.
+Cat pictures.
 
-## Getting Started
+## Scoring Images
 
-This project is a starting point for a Flutter application.
+If you tap on an image, it brings up a list of attributes to score the image with. Select the one that fits most to score that image.
 
-A few resources to get you started if this is your first Flutter project:
+Tap on the image again to close the list.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This scoring data will be used for training a machine learning model to identify the cats that fit those categories automatically.
