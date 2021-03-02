@@ -41,18 +41,16 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
               offset: Offset(0.0, size.height + 5.0),
               child: Material(
                 elevation: 4.0,
-                child: ScorerList(
-                  photo: _photo
-                ),
+                child: ScorerList(photo: _photo),
               ),
-            )
-        )
-    );
+            )));
   }
 
   Future<bool> saveFile(String filename, List<int> fileData) async {
     var permissionStatus = await Permission.storage.status;
-    if (permissionStatus.isUndetermined || permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
+    if (permissionStatus.isUndetermined ||
+        permissionStatus.isDenied ||
+        permissionStatus.isPermanentlyDenied) {
       Permission.storage.request();
     }
 
@@ -79,15 +77,17 @@ class _CatPhotoRowState extends State<CatPhotoRow> {
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
-            return CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           },
         ),
         onLongPress: () async {
-          var saved = await saveFile(_photo.name, base64Decode(_photo.imageData));
+          var saved =
+              await saveFile(_photo.name, base64Decode(_photo.imageData));
           if (saved) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Image saved.")
-            ));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text("Image saved.")));
           }
         },
         onTap: () {
@@ -112,14 +112,24 @@ class ScorerList extends StatefulWidget {
 
   @override
   _ScorerListState createState() => _ScorerListState(
-    photo: this.photo,
-    photoID: this.photo.id,
-    selectedScore: this.photo.score,
-  );
+        photo: this.photo,
+        photoID: this.photo.id,
+        selectedScore: this.photo.score,
+      );
 }
 
 class _ScorerListState extends State<ScorerList> {
-  static const ScorerRowNames = {"angry", "bad-data", "garbage", "happy", "none", "romantic/love", "sad", "spooked", "violent"};
+  static const ScorerRowNames = {
+    "angry",
+    "bad-data",
+    "garbage",
+    "happy",
+    "none",
+    "romantic/love",
+    "sad",
+    "spooked",
+    "violent"
+  };
 
   final int photoID;
 
@@ -147,7 +157,8 @@ class _ScorerListState extends State<ScorerList> {
                   photo.score = i;
                 });
 
-                final response = await http.get('https://www.nesbitt.rocks/catpalooza/score?id=$photoID&score=$selectedScore');
+                final response = await http.get(
+                    'https://www.nesbitt.rocks/catpalooza/score?id=$photoID&score=$selectedScore');
 
                 if (response.statusCode != 200) {
                   throw Exception("Failed to score image\n" + response.body);
@@ -160,7 +171,7 @@ class _ScorerListState extends State<ScorerList> {
             );
           },
         )
-      // ),
-    );
+        // ),
+        );
   }
 }
